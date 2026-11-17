@@ -1,0 +1,611 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mr. Reader · preview de la marquesina</title>
+<style>
+  :root {
+    --bg: #12050a;
+    --fg: #ffffff;
+    --red: #e5304a;
+    --red-soft: #ff8a95;
+    --red-deep: #a80f24;
+    --glass: rgba(28, 8, 14, .55);
+    --stroke: #14050a;
+  }
+
+  html, body {
+    margin: 0;
+    height: 100%;
+    overflow: hidden;
+    background: var(--bg);
+    font-family: "FantasqueSansM Nerd Font", "MesloLGS Nerd Font", monospace;
+  }
+
+  .app {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background:
+      radial-gradient(circle at 18% 10%, rgba(255, 45, 85, .22) 0%, rgba(255, 45, 85, 0) 42%),
+      radial-gradient(circle at 50% 34%, #2b0a15 0%, #12050a 60%, #070204 100%);
+  }
+
+  .stage {
+    position: relative;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+  }
+
+  .track {
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+    will-change: transform;
+  }
+
+  .spacer {
+    flex: 0 0 auto;
+    height: 1px;
+  }
+
+  .line {
+    flex: 0 0 auto;
+    white-space: nowrap;
+    font-size: 22pt;
+    font-weight: 600;
+    letter-spacing: 1px;
+    color: var(--fg);
+    /* Trazo oscuro pegado a la letra; el glow rojo queda por fuera. */
+    text-shadow:
+      -2px -2px 0 var(--stroke), 0 -2px 0 var(--stroke), 2px -2px 0 var(--stroke),
+      -2px 0 0 var(--stroke), 2px 0 0 var(--stroke),
+      -2px 2px 0 var(--stroke), 0 2px 0 var(--stroke), 2px 2px 0 var(--stroke),
+      0 0 9px rgba(255, 64, 92, .85),
+      0 0 22px rgba(255, 30, 70, .45),
+      0 0 44px rgba(255, 20, 60, .22);
+  }
+
+  .line span {
+    white-space: nowrap;
+  }
+
+  .bar {
+    flex: 0 0 auto;
+    height: 3px;
+    background: rgba(255, 255, 255, .08);
+  }
+
+  .bar .fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--red-soft), var(--red));
+    box-shadow: 0 0 10px rgba(255, 40, 80, .55);
+  }
+
+  .controls {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    max-width: calc(100% - 24px);
+    margin: 0 auto 14px;
+    padding: 6px 12px;
+    border-radius: 22px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, .10), rgba(255, 255, 255, .03)), var(--glass);
+    border: 1px solid rgba(255, 90, 110, .30);
+    box-shadow: 0 8px 26px rgba(0, 0, 0, .38), inset 0 1px 0 rgba(255, 255, 255, .14);
+    backdrop-filter: blur(10px);
+  }
+
+  .group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  button {
+    width: 34px;
+    height: 34px;
+    display: grid;
+    place-items: center;
+    padding: 0;
+    border-radius: 50%;
+    color: #ffe9ee;
+    background: linear-gradient(180deg, rgba(255, 255, 255, .12), rgba(255, 255, 255, .03)), rgba(255, 255, 255, .04);
+    border: 1px solid rgba(255, 255, 255, .12);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, .30), inset 0 1px 0 rgba(255, 255, 255, .12);
+    cursor: pointer;
+    transition: background .15s, box-shadow .15s, border-color .15s;
+  }
+
+  button svg {
+    width: 16px;
+    height: 16px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  button:hover {
+    background: linear-gradient(180deg, #ff6b7d, #d81b32);
+    color: #fff;
+    border-color: rgba(255, 170, 180, .65);
+    box-shadow: 0 0 16px rgba(255, 40, 80, .55), inset 0 1px 0 rgba(255, 255, 255, .25);
+  }
+
+  button:active {
+    background: linear-gradient(180deg, #d81b32, #a80f24);
+  }
+
+  .speed-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 6px;
+  }
+
+  input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 110px;
+    height: 6px;
+    border-radius: 3px;
+    background: linear-gradient(90deg, var(--red-soft), var(--red));
+    outline: none;
+    cursor: pointer;
+  }
+
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #fff;
+    border: 1px solid rgba(200, 30, 50, .55);
+    box-shadow: 0 0 10px rgba(255, 50, 80, .65);
+  }
+
+  input[type="range"]::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #fff;
+    border: 1px solid rgba(200, 30, 50, .55);
+    box-shadow: 0 0 10px rgba(255, 50, 80, .65);
+  }
+
+  .speed {
+    min-width: 48px;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+    color: #ffd7dd;
+    font-weight: 600;
+  }
+
+  .hint {
+    margin-left: 6px;
+    opacity: .45;
+    font-size: 12px;
+    color: #ffd7dd;
+  }
+
+  .badge {
+    position: absolute;
+    top: 10px;
+    left: 12px;
+    font-size: 11px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: rgba(255, 215, 221, .38);
+    pointer-events: none;
+    user-select: none;
+  }
+
+  .paused .badge::after {
+    content: " · en pausa";
+    color: var(--red-soft);
+  }
+
+  /* ── Tema claro ─────────────────────────────────────────────────── */
+  body.light {
+    --bg: #fff5f5;
+    --fg: #1b0d11;
+    --glass: rgba(255, 255, 255, .55);
+    --stroke: #ffffff;
+  }
+
+  body.light .app {
+    background:
+      radial-gradient(circle at 18% 10%, rgba(255, 120, 140, .18) 0%, rgba(255, 120, 140, 0) 42%),
+      radial-gradient(circle at 50% 34%, #ffffff 0%, #ffe9ec 55%, #f3dde2 100%);
+  }
+
+  body.light .line {
+    text-shadow:
+      -2px -2px 0 var(--stroke), 0 -2px 0 var(--stroke), 2px -2px 0 var(--stroke),
+      -2px 0 0 var(--stroke), 2px 0 0 var(--stroke),
+      -2px 2px 0 var(--stroke), 0 2px 0 var(--stroke), 2px 2px 0 var(--stroke),
+      0 0 8px rgba(229, 57, 53, .40),
+      0 0 20px rgba(229, 57, 53, .22);
+  }
+
+  body.light .badge {
+    color: rgba(120, 20, 35, .40);
+  }
+
+  body.light .bar {
+    background: rgba(160, 20, 40, .12);
+  }
+
+  body.light .controls {
+    background: linear-gradient(180deg, rgba(255, 255, 255, .90), rgba(255, 255, 255, .45)), var(--glass);
+    border-color: rgba(200, 40, 60, .25);
+    box-shadow: 0 8px 24px rgba(160, 20, 40, .18), inset 0 1px 0 #fff;
+  }
+
+  body.light button {
+    background: linear-gradient(180deg, #ffffff, #ffe9ec);
+    color: #8a1224;
+    border-color: rgba(180, 30, 50, .22);
+    box-shadow: 0 2px 8px rgba(160, 20, 40, .12), inset 0 1px 0 #fff;
+  }
+
+  body.light button:hover {
+    background: linear-gradient(180deg, #ff6b7d, #d81b32);
+    color: #fff;
+  }
+
+  body.light .speed {
+    color: #8a1224;
+  }
+
+  body.light .hint {
+    color: #8a1224;
+  }
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <div class="stage" id="stage">
+    <div class="badge">preview · marquesina</div>
+    <div class="track" id="track">
+      <div class="spacer" id="spacerA"></div>
+      <div class="line" id="line"></div>
+      <div class="spacer" id="spacerB"></div>
+    </div>
+  </div>
+
+  <div class="bar"><div class="fill" id="progress"></div></div>
+
+  <div class="controls">
+    <div class="group">
+      <button id="prevFile" title="Archivo anterior"></button>
+      <button id="prev" title="Línea anterior (←)"></button>
+      <button id="play" title="Pausa / reanudar (Espacio)"></button>
+      <button id="next" title="Línea siguiente (→)"></button>
+      <button id="nextFile" title="Archivo siguiente"></button>
+    </div>
+    <div class="group speed-wrap">
+      <input id="speedInput" type="range" min="0.25" max="4" step="0.05" value="1" title="Velocidad (arrastra)">
+      <span class="speed" id="speed">1.00×</span>
+    </div>
+    <div class="group">
+      <button id="theme" title="Alternar tema oscuro/claro"></button>
+      <button id="fs" title="Pantalla completa (F11)"></button>
+    </div>
+    <span class="hint">Espacio pausa · ←/→ línea · F11 pantalla completa</span>
+  </div>
+</div>
+
+<script>
+"use strict";
+
+/* -------------------------------------------------------------------------
+ * Constantes equivalentes a src/config.rs y src/ui/window.rs
+ * ---------------------------------------------------------------------- */
+const MIN_FONT = 20;     // px
+const MAX_FONT = 56;     // px
+const BASE_MS = 1500;
+const MS_PER_WORD = 180;
+const PX_PER_S = 650;    // velocidad base de la marquesina
+const TOP_N = 40;
+const COLORS = ["#ff5555", "#50fa7b", "#8be9fd", "#bd93f9", "#ffb86c", "#f1fa8c", "#ff79c6"];
+const LIGHT_COLORS = ["#b3261e", "#1b7f3b", "#0b6e8a"];
+
+const STOP = new Set([
+  "que", "con", "por", "para", "una", "uno", "unos", "unas", "los", "las",
+  "del", "como", "mas", "pero", "sin", "sobre", "entre", "este", "esta",
+  "estos", "estas", "the", "and", "for", "with", "from", "that", "this",
+]);
+
+/* Iconos simbólicos equivalentes a los de Adwaita en la app GTK. */
+const ICONS = {
+  prevFile: '<svg viewBox="0 0 24 24"><polygon points="19 20 9 12 19 4" fill="currentColor" stroke="none"/><line x1="5" y1="19" x2="5" y2="5"/></svg>',
+  nextFile: '<svg viewBox="0 0 24 24"><polygon points="5 4 15 12 5 20" fill="currentColor" stroke="none"/><line x1="19" y1="5" x2="19" y2="19"/></svg>',
+  prev: '<svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>',
+  next: '<svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>',
+  play: '<svg viewBox="0 0 24 24"><polygon points="6 4 20 12 6 20" fill="currentColor" stroke="none"/></svg>',
+  pause: '<svg viewBox="0 0 24 24"><rect x="7" y="4" width="4" height="16" rx="1" fill="currentColor" stroke="none"/><rect x="14" y="4" width="4" height="16" rx="1" fill="currentColor" stroke="none"/></svg>',
+  sun: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>',
+  moon: '<svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"/></svg>',
+  fullscreen: '<svg viewBox="0 0 24 24"><path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M16 21h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>',
+};
+
+/* Notas de ejemplo. Las líneas `clave:: valor` de Anki deben desaparecer. */
+const RAW_NOTES = [
+  "La marquesina se mueve sola, con glow, sin estirar la ventana ni consumir memoria.",
+  "Rust, GTK4 y SQLite indexan tus notas Markdown en segundo plano.",
+  "Las palabras frecuentes crecen y brillan: marquesina, texto, glow, estilo.",
+  "Marquesina horizontal en una sola linea, centrada y con tipografia Nerd Font.",
+  "Cada nota se lee linea a linea: el texto entra por la derecha y sale por la izquierda.",
+  "Glow rojo aero sobre un fondo con gradiente, ahora con contorno en las letras.",
+  "Rust indexa, SQLite guarda, GTK dibuja: texto en movimiento sin saltos ni tirones.",
+  "Espacio pausa, flechas cambian de linea, F11 pone la marquesina a pantalla completa.",
+  "Marquesina, glow y estilo: la misma vista que la app real, ahora en el navegador.",
+  "created-at:: 2026-10-26T16:27:01.863Z",
+  "card-s:: 4.72",
+  "card-d:: 6.04",
+  "card-reps:: 2",
+  "card-lapses:: 0",
+  "last-reviewed:: 2026-10-29T01:12:25.590Z",
+  "interval-days:: 5",
+  "ease-factor:: 2.4499999999999997",
+  "due-date:: 2026-11-03T01:12:25.590Z",
+  "card-state:: 2",
+];
+
+/* Equivalente a analysis::is_property_line: clave sin espacios + `::`. */
+function isPropertyLine(line) {
+  const at = line.indexOf("::");
+  if (at <= 0) return false;
+  const key = line.slice(0, at).trim();
+  if (!key || key.length > 48 || /\s/.test(key)) return false;
+  return /^[A-Za-z0-9_-]+$/.test(key);
+}
+
+const NOTES = RAW_NOTES.filter((line) => !isPropertyLine(line));
+
+/* -------------------------------------------------------------------------
+ * Conteo de palabras y ranking (equivalente a store::top + analysis)
+ * ---------------------------------------------------------------------- */
+function normalize(word) {
+  return word
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^\p{L}\p{N}]/gu, "");
+}
+
+const counts = new Map();
+for (const note of NOTES) {
+  for (const token of note.split(/\s+/)) {
+    if (!token) continue;
+    const word = normalize(token);
+    if (word.length < 3 || STOP.has(word)) continue;
+    counts.set(word, (counts.get(word) || 0) + 1);
+  }
+}
+
+const topWords = [...counts.entries()]
+  .sort((a, b) => b[1] - a[1])
+  .slice(0, TOP_N);
+const rank = new Map(topWords.map(([word, count], index) => [word, { index, count }]));
+const maxCount = topWords.length ? topWords[0][1] : 1;
+
+function escapeHtml(text) {
+  return text.replace(/[&<>"]/g, (c) => (
+    { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]
+  ));
+}
+
+function renderLine(text) {
+  const palette = document.body.classList.contains("light") ? LIGHT_COLORS : COLORS;
+  return text
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((token) => {
+      const hit = rank.get(normalize(token));
+      const escaped = escapeHtml(token);
+      if (!hit) return `<span>${escaped}</span>`;
+
+      const frequency = Math.sqrt(hit.count / maxCount);
+      const size = MIN_FONT + (MAX_FONT - MIN_FONT) * frequency;
+      const color = hit.index < 5
+        ? palette[0]
+        : hit.index < 15
+          ? palette[1]
+          : palette[2];
+
+      return `<span style="font-size:${size.toFixed(1)}px;color:${color}">${escaped}</span>`;
+    })
+    .join(" ");
+}
+
+/* -------------------------------------------------------------------------
+ * Marquesina: [hueco V][texto L][hueco V], recorrido = V + L
+ * ---------------------------------------------------------------------- */
+const app = document.getElementById("app");
+const stage = document.getElementById("stage");
+const track = document.getElementById("track");
+const lineEl = document.getElementById("line");
+const spacerA = document.getElementById("spacerA");
+const spacerB = document.getElementById("spacerB");
+const progress = document.getElementById("progress");
+const playBtn = document.getElementById("play");
+const speedInput = document.getElementById("speedInput");
+const speedLabel = document.getElementById("speed");
+const themeBtn = document.getElementById("theme");
+const fsBtn = document.getElementById("fs");
+
+document.getElementById("prevFile").innerHTML = ICONS.prevFile;
+document.getElementById("nextFile").innerHTML = ICONS.nextFile;
+document.getElementById("prev").innerHTML = ICONS.prev;
+document.getElementById("next").innerHTML = ICONS.next;
+fsBtn.innerHTML = ICONS.fullscreen;
+
+let index = 0;
+let paused = false;
+let speed = 1;
+let elapsed = 0;
+let duration = 1000;
+let travel = 0;
+let last = performance.now();
+
+function clamp(value, min, max) {
+  return Math.max(min, Math.min(max, value));
+}
+
+function layout(nextIndex, keepFraction) {
+  const fraction = keepFraction ? clamp(elapsed / duration, 0, 1) : 0;
+  index = ((nextIndex % NOTES.length) + NOTES.length) % NOTES.length;
+
+  const viewport = stage.clientWidth || window.innerWidth;
+  spacerA.style.width = `${viewport}px`;
+  spacerB.style.width = `${viewport}px`;
+
+  lineEl.innerHTML = renderLine(NOTES[index]);
+  const textWidth = lineEl.getBoundingClientRect().width;
+  travel = viewport + textWidth;
+
+  const words = NOTES[index].split(/\s+/).filter(Boolean).length;
+  const readingMs = (BASE_MS + words * MS_PER_WORD) / speed;
+  const travelMs = (travel / (PX_PER_S * speed)) * 1000;
+  duration = clamp(Math.max(readingMs, travelMs), 1200, 30000);
+
+  elapsed = fraction * duration;
+  track.style.transform = `translate3d(${-travel * fraction}px, 0, 0)`;
+  progress.style.width = `${(fraction * 100).toFixed(2)}%`;
+}
+
+function frame(now) {
+  const dt = Math.min(100, now - last);
+  last = now;
+
+  if (!paused) elapsed += dt;
+
+  const fraction = duration > 0 ? clamp(elapsed / duration, 0, 1) : 1;
+  track.style.transform = `translate3d(${-travel * fraction}px, 0, 0)`;
+  progress.style.width = `${(fraction * 100).toFixed(2)}%`;
+
+  if (fraction >= 1) layout(index + 1);
+
+  requestAnimationFrame(frame);
+}
+
+function updatePlayIcon() {
+  playBtn.innerHTML = paused ? ICONS.play : ICONS.pause;
+}
+
+function togglePause() {
+  paused = !paused;
+  app.classList.toggle("paused", paused);
+  updatePlayIcon();
+}
+
+function setSpeed(value) {
+  speed = clamp(value, 0.25, 4);
+  speedInput.value = speed.toFixed(2);
+  speedLabel.textContent = `${speed.toFixed(2)}×`;
+  layout(index, true);
+}
+
+function changeSpeed(delta) {
+  setSpeed(speed + delta);
+}
+
+function updateThemeIcon() {
+  const light = document.body.classList.contains("light");
+  themeBtn.innerHTML = light ? ICONS.sun : ICONS.moon;
+  themeBtn.title = light ? "Cambiar a modo oscuro" : "Cambiar a modo claro";
+}
+
+function toggleFullscreen() {
+  if (document.fullscreenElement) {
+    document.exitFullscreen().catch(() => {});
+  } else {
+    document.documentElement.requestFullscreen().catch(() => {});
+  }
+}
+
+playBtn.addEventListener("click", togglePause);
+document.getElementById("prev").addEventListener("click", () => layout(index - 1));
+document.getElementById("next").addEventListener("click", () => layout(index + 1));
+document.getElementById("prevFile").addEventListener("click", () => layout(index - 1));
+document.getElementById("nextFile").addEventListener("click", () => layout(index + 1));
+speedInput.addEventListener("input", (event) => setSpeed(parseFloat(event.target.value)));
+fsBtn.addEventListener("click", toggleFullscreen);
+
+themeBtn.addEventListener("click", () => {
+  document.body.classList.toggle("light");
+  updateThemeIcon();
+  layout(index, true);
+});
+
+window.addEventListener("keydown", (event) => {
+  if (event.code === "Space") {
+    event.preventDefault();
+    togglePause();
+  } else if (event.code === "ArrowRight") {
+    event.preventDefault();
+    layout(index + 1);
+  } else if (event.code === "ArrowLeft") {
+    event.preventDefault();
+    layout(index - 1);
+  } else if (event.code === "F11") {
+    event.preventDefault();
+    toggleFullscreen();
+  }
+});
+
+let resizeTimer = 0;
+window.addEventListener("resize", () => {
+  clearTimeout(resizeTimer);
+  // Recolocar manteniendo el progreso de la línea actual.
+  resizeTimer = setTimeout(() => layout(index, true), 120);
+});
+
+/* Gancho de depuración: permite comprobar la geometría desde la consola. */
+window.__marqueePreview = {
+  get state() {
+    return {
+      index,
+      paused,
+      speed,
+      elapsed,
+      duration,
+      viewport: stage.clientWidth,
+      lineWidth: lineEl.getBoundingClientRect().width,
+      travel,
+      notes: NOTES.length,
+      hasPropertyLines: NOTES.some((n) => n.includes("::")),
+    };
+  },
+  layout,
+  togglePause,
+  changeSpeed,
+  setSpeed,
+  seek(fraction) {
+    elapsed = clamp(fraction, 0, 1) * duration;
+  },
+};
+
+/* Arranque */
+updatePlayIcon();
+updateThemeIcon();
+speedInput.value = speed.toFixed(2);
+speedLabel.textContent = `${speed.toFixed(2)}×`;
+layout(0);
+last = performance.now();
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>
